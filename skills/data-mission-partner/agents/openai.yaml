@@ -1,4 +1,6 @@
 interface:
   display_name: "데이터 미션 파트너"
-  short_description: "대회 문제를 이해하고 근거를 확인하며 제출 가능한 결과까지 완성합니다"
-  default_prompt: "$data-mission-partner 문제와 자료를 읽고, 선택 이유를 설명하며 검증된 결과물을 만들어 줘."
+  short_description: "쉬운 설명과 자동 단계 선택으로 계획부터 실행·검증·마무리까지 이어갑니다"
+  default_prompt: "$data-mission-partner 현재 문제와 자료부터 확인하고, 중요한 선택은 쉽게 설명하며 합의한 작업의 실행·검증까지 이어가 줘."
+policy:
+  allow_implicit_invocation: true
