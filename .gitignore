@@ -1,0 +1,12 @@
+# Local task data and generated results do not belong in the skill package.
+/inputs/
+/outputs/
+/private/
+/work/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db
