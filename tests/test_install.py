@@ -3,8 +3,10 @@ import importlib.util
 import io
 import os
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('installer', ROOT / 'scripts' / 'install.py')
@@ -27,9 +29,24 @@ class InstallTests(unittest.TestCase):
         self.project.mkdir()
         self.dest = self.project / '.agents' / 'skills' / installer.SKILL_NAME
 
-    def run_install(self, *extra):
-        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-            return installer.run(['--target', str(self.project), *extra])
+    def run_install(self, *extra, source=None, target=None):
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()), mock.patch.object(installer, 'SOURCE', source or installer.SOURCE):
+            return installer.run(['--target', str(target or self.project), *extra])
+
+    def copy_source(self, path=None):
+        path = path or Path(self.temp.name) / 'source'
+        shutil.copytree(installer.SOURCE, path)
+        return path
+
+    def assert_rejected_without_changes(self, source, target=None):
+        target = target or self.project
+        before = snapshot(target)
+        paths = {p.relative_to(target) for p in target.rglob('*')}
+        for mode in [(), ('--apply',), ('--check',)]:
+            with self.subTest(mode=mode):
+                self.assertEqual(self.run_install(*mode, source=source, target=target), 2)
+                self.assertEqual(snapshot(target), before)
+                self.assertEqual({p.relative_to(target) for p in target.rglob('*')}, paths)
 
     def test_preview_does_not_create_files(self):
         before = snapshot(self.project)
@@ -90,6 +107,62 @@ class InstallTests(unittest.TestCase):
             self.skipTest('Host does not allow creating a symbolic link.')
         self.assertEqual(self.run_install('--apply'), 2)
         self.assertEqual(snapshot(outside), {})
+
+    def test_incomplete_source_cannot_install_or_pass_check(self):
+        source = self.copy_source()
+        # Even an already installed destination must not make an incomplete
+        # source pass --check. Keep the complete installed copy untouched.
+        self.assertEqual(self.run_install('--apply', source=source), 0)
+        for rel in ['references/collaboration.md', 'SKILL.md', 'agents/openai.yaml', 'NOTICE.md',
+                    'licenses/ColdTbrew-MIT.txt', 'licenses/JINwonLEE-MIT.txt',
+                    'licenses/JINwonLEE-UPSTREAM-NOTICE.txt', 'licenses/pstack-NOTICE.txt',
+                    'licenses/PROJECT-MIT.txt']:
+            with self.subTest(missing=rel):
+                path = source / rel
+                content = path.read_bytes()
+                path.unlink()
+                try:
+                    self.assert_rejected_without_changes(source)
+                finally:
+                    path.write_bytes(content)
+
+    def test_incomplete_source_does_not_create_destination(self):
+        source = self.copy_source()
+        (source / 'references/data-checks.md').unlink()
+        self.assert_rejected_without_changes(source)
+        self.assertFalse((self.project / '.agents').exists())
+
+    def test_missing_transitive_reference_is_rejected(self):
+        source = self.copy_source()
+        with (source / 'references/collaboration.md').open('a', encoding='utf-8') as stream:
+            stream.write('\n[Related guide](missing-guide.md)\n')
+        self.assert_rejected_without_changes(source)
+
+    def test_local_reference_cannot_escape_skill(self):
+        source = self.copy_source()
+        (Path(self.temp.name) / 'outside.md').write_text('outside', encoding='utf-8')
+        with (source / 'references/collaboration.md').open('a', encoding='utf-8') as stream:
+            stream.write('\n[Outside](../../outside.md)\n')
+        self.assert_rejected_without_changes(source)
+
+    def test_install_into_source_or_its_child_is_rejected(self):
+        source = self.copy_source()
+        for target in [source, source / 'references']:
+            with self.subTest(target=target.name):
+                self.assert_rejected_without_changes(source, target)
+        self.assertFalse((source / '.agents').exists())
+
+    def test_destination_containing_source_is_rejected(self):
+        source = self.copy_source(self.dest / 'source-copy')
+        self.assert_rejected_without_changes(source)
+
+    def test_direct_read_source_is_complete_without_installation(self):
+        source = self.copy_source()
+        checked_source, files = installer.validate_source(source)
+        self.assertEqual(checked_source, source.resolve())
+        self.assertIn(source / 'references/collaboration.md', files)
+        self.assertFalse((self.project / '.agents').exists())
+        self.assertFalse((source / '.agents').exists())
 
 
 if __name__ == '__main__':

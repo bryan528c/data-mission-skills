@@ -1,6 +1,6 @@
 """Offline structural checks. Passing does not prove model behavior or Cofa compatibility."""
 from pathlib import Path
-import hashlib
+import importlib.util
 import json
 import re
 import sys
@@ -11,12 +11,20 @@ def validate(root: Path) -> list[str]:
     root = root.resolve()
     skill = root / 'skills/data-mission-partner'
     required = ['README.md', 'START_HERE.md', 'NOTICE.md', 'LICENSE',
-                'docs/REVIEW.md', 'docs/VALIDATION.md', 'checks/scenarios.json',
+                'docs/REVIEW.md', 'docs/VALIDATION.md', 'checks/scenarios.json', 'scripts/install.py',
                 'skills/data-mission-partner/SKILL.md',
                 'skills/data-mission-partner/agents/openai.yaml']
     for rel in required:
         if not (root / rel).is_file(): errors.append('missing: ' + rel)
     if errors: return errors
+    spec = importlib.util.spec_from_file_location('package_installer', root / 'scripts/install.py')
+    installer = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(installer)
+    try:
+        installer.validate_source(skill)
+    except installer.SourceError as exc:
+        errors.append(str(exc))
+        return errors
     core = (skill / 'SKILL.md').read_text(encoding='utf-8')
     if not core.startswith('---\n') or '\n---\n' not in core[4:]:
         errors.append('missing frontmatter')
@@ -43,7 +51,7 @@ def validate(root: Path) -> list[str]:
         if file.suffix not in {'.md','.txt','.json','.yaml','.py'} and file.name not in {'.gitignore','LICENSE'}:
             errors.append('unexpected file: '+str(rel)); continue
         data = file.read_text(encoding='utf-8')
-        if file.suffix=='.md':
+        if file.suffix=='.md' and not file.is_relative_to(skill):
             for target in re.findall(r'\[[^\]]*\]\(([^)]+)\)',data):
                 if '://' in target or target.startswith('#'): continue
                 check = (file.parent / target.split('#')[0]).resolve()
@@ -52,13 +60,6 @@ def validate(root: Path) -> list[str]:
         # Known private identifiers must not be distributed. This is not a complete secret scanner.
         if re.search(r'cand_[A-Za-z0-9]{6,}|sk-proj-[A-Za-z0-9]{10,}|ghp_[A-Za-z0-9]{15,}',data):
             errors.append('possible private identifier: '+str(rel))
-    refs=list((skill/'references').glob('*.md'))
-    if len(refs)!=5: errors.append('expected five focused reference files')
-    for p in refs:
-        if 'references/'+p.name not in core: errors.append('unrouted reference: '+p.name)
-    for license_file in ['ColdTbrew-MIT.txt','JINwonLEE-MIT.txt','JINwonLEE-UPSTREAM-NOTICE.txt','pstack-NOTICE.txt','PROJECT-MIT.txt']:
-        p=skill/'licenses'/license_file
-        if not p.is_file(): errors.append('missing attribution: '+license_file)
     if (skill/'licenses/PROJECT-MIT.txt').is_file() and (root/'LICENSE').read_bytes()!=(skill/'licenses/PROJECT-MIT.txt').read_bytes():
         errors.append('project license copy differs')
     scenarios=json.loads((root/'checks/scenarios.json').read_text(encoding='utf-8'))
