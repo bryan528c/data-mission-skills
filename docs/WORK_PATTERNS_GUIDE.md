@@ -110,3 +110,20 @@
 질문: “어떤 입력이 어떤 규칙을 거쳐 결과가 되었나? 왜 선택했나? 무엇으로 확인했나? 아직 무엇을 모르는가?”
 
 이 문서는 AI 허용 단계의 일반 준비 자료다. 제한된 평가의 실제 원문·답안·개인 정보를 공개하거나, AI 금지 단계에서 이 지침으로 지원을 계속하지 않는다.
+
+## 더 깊게 준비하려면: 8개 선택형 심화 지침
+
+위 본문은 10분 복습을 위한 요약이다. 실제 구현 전에는 아래에서 **해당 업무 하나만** 읽는다. 각 문서에는 원자료에서 확인할 필드, 최소 실행 흐름, 계산·판정 경계, 작은 검증 입력, 실무자 질문과 제출 설명에 연결할 코드 흐름을 덧붙였다.
+
+| 업무 | 심화 문서 | 먼저 검증할 실패 사례 |
+| --- | --- | --- |
+| 시장·경쟁사 비교 | [시장 비교](../skills/data-mission-partner/references/domains/market-comparison.md) | 기준이 다른 기간·단위·연결/별도 수치 |
+| 소재·공급사 변경 | [변경 검토](../skills/data-mission-partner/references/domains/supplier-change.md) | 필수 증빙 없음이 자동 통과됨 |
+| 통근·차량 배정 | [노선·배정](../skills/data-mission-partner/references/domains/transport-planning.md) | 정원 초과와 구버전 계획이 최신으로 표시됨 |
+| 식단·메뉴 관심 | [식단 운영](../skills/data-mission-partner/references/domains/meal-planning.md) | 선호 분모 오류와 제약 위반 |
+| 카메라 설치 | [설치안 비교](../skills/data-mission-partner/references/domains/camera-planning.md) | 겹치는 커버 중복 합계·금지 구역 |
+| Overlay 품질 | [측정 품질](../skills/data-mission-partner/references/domains/overlay-quality.md) | 단위·그룹·규격 판정식 불일치 |
+| 가치사슬 영향 | [관계·영향](../skills/data-mission-partner/references/domains/value-chain-analysis.md) | 간선 방향·순환·근거 없는 영향률 |
+| 산업교육 | [교육 설계](../skills/data-mission-partner/references/domains/industrial-education.md) | 학습 목표와 확인 질문 불일치 |
+
+**연습은 지식 암기가 아니라 판단 흐름 확인이다.** 실제 과제 지시서·데이터·지정 양식 → 실무자에게 필요한 질문 → 작은 동작 가능한 결과 → 독립 검증 → 변경·예외 → 공식 양식과 구현 대조 순서로 판단한다. 복합 과제인 경우에만 둘 이상의 지침을 참고한다. 시험 문제·정답·개인 정보는 공개 저장소에 올리지 않는다.
