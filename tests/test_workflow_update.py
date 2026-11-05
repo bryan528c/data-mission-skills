@@ -3,6 +3,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -34,8 +35,10 @@ def links(path):
 class WorkflowUpdateTests(unittest.TestCase):
     def test_single_entry_and_bounded_core(self):
         self.assertEqual(len(list((ROOT/'skills').rglob('SKILL.md'))), 1)
-        self.assertLessEqual(len((SKILL/'SKILL.md').read_text().splitlines()),110)
-        self.assertEqual(len(list((SKILL/'references').glob('*.md'))),5)
+        self.assertLessEqual(len((SKILL/'SKILL.md').read_text(encoding='utf-8').splitlines()),110)
+        core_refs = {'collaboration.md', 'data-checks.md', 'debugging.md',
+                     'tools-and-models.md', 'delivery-checks.md'}
+        self.assertTrue(core_refs.issubset({p.name for p in (SKILL/'references').glob('*.md')}))
 
     def test_all_eight_patterns_are_linked(self):
         linked=set(links(SKILL/'references/patterns/index.md'))
@@ -59,14 +62,14 @@ class WorkflowUpdateTests(unittest.TestCase):
         self.assertIn(SKILL/'references/workflows/submission-understanding.md',files)
 
     def test_metadata_allows_but_does_not_claim_implicit_success(self):
-        t=(SKILL/'agents/openai.yaml').read_text()
+        t=(SKILL/'agents/openai.yaml').read_text(encoding='utf-8')
         self.assertIn('allow_implicit_invocation: true',t)
         desc=re.search('short_description: "(.+)"',t).group(1)
         self.assertTrue(25 <= len(desc) <= 64)
         self.assertIn('$data-mission-partner',t)
 
     def test_designed_scenarios_not_claimed_as_model_runs(self):
-        c=json.loads((ROOT/'checks/expanded_scenarios.json').read_text())
+        c=json.loads((ROOT/'checks/expanded_scenarios.json').read_text(encoding='utf-8'))
         self.assertEqual(c['kind'],'DESIGNED_NOT_EXECUTED_WITH_MODEL')
         self.assertEqual(len(c['cases']),28)
         self.assertEqual(len({x['id'] for x in c['cases']}),28)
@@ -78,7 +81,7 @@ class WorkflowUpdateTests(unittest.TestCase):
 
     def test_pattern_sections_are_consistent(self):
         for name in PATTERNS:
-            t=(SKILL/f'references/patterns/{name}.md').read_text()
+            t=(SKILL/f'references/patterns/{name}.md').read_text(encoding='utf-8')
             for section in ('뜻과 적용','먼저 확인','작은 첫 결과와 구조','검증할 위험','실무자 질문과 설명'):
                 self.assertIn(section,t,name)
 
@@ -90,7 +93,7 @@ class WorkflowUpdateTests(unittest.TestCase):
 
     def test_every_new_nested_document_is_required_transitively(self):
         nested=list((SKILL/'references/patterns').glob('*.md'))+list((SKILL/'references/workflows').glob('*.md'))
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(dir=os.environ.get('SKILL_TEST_TMPDIR')) as temp:
             source=Path(temp)/'source';shutil.copytree(SKILL,source)
             project=Path(temp)/'project';project.mkdir()
             (project/'README.md').write_text('existing project')
@@ -106,7 +109,7 @@ class WorkflowUpdateTests(unittest.TestCase):
                 finally:p.write_bytes(data)
 
     def test_nested_source_symlink_is_rejected_without_writes(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(dir=os.environ.get('SKILL_TEST_TMPDIR')) as temp:
             source=Path(temp)/'source';shutil.copytree(SKILL,source)
             external=Path(temp)/'outside.md';external.write_text('not a reference')
             p=source/'references/patterns/comparison.md';p.unlink()
@@ -115,7 +118,7 @@ class WorkflowUpdateTests(unittest.TestCase):
             with self.assertRaises(installer.SourceError):installer.validate_source(source)
 
     def test_portable_copy_is_self_contained(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(dir=os.environ.get('SKILL_TEST_TMPDIR')) as temp:
             project=Path(temp)/'project';project.mkdir()
             with contextlib.redirect_stdout(io.StringIO()),contextlib.redirect_stderr(io.StringIO()):
                 self.assertEqual(installer.run(['--target',str(project),'--apply']),0)

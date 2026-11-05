@@ -2,7 +2,7 @@
 
 1. 실제 과제 폴더·지시서·지정 제출 양식과 이 스킬 저장소를 구분한다. 현재 작업과 최신 요청을 먼저 확인한다. 양식이 없다면 있다고 가정하지 않는다.
 2. [데이터 미션 파트너](skills/data-mission-partner/SKILL.md)를 읽는다. 첫 답에는 목표·필수 결과·첫 작업과 확인 방법을 짧게 연결한다. 설명·계획만 요청했으면 그 범위를 지키고, 실행을 맡겼으면 첫 결과와 검증까지 진행한다.
-3. 새로운 업무라면 [업무 유형 선택](skills/data-mission-partner/references/patterns/index.md)에서 실제 요구에 맞는 부분만 읽는다. 여러 터미널은 [병렬 작업](skills/data-mission-partner/references/workflows/parallel.md), 지정 문서와 코드 설명은 [설계 이해](skills/data-mission-partner/references/workflows/submission-understanding.md)를 필요할 때만 적용한다.
+3. 새로운 업무라면 [업무 유형 선택](skills/data-mission-partner/references/patterns/index.md)에서 실제 요구에 맞는 부분만 읽는다. 분야별 개념·예가 더 필요하면 [업무별 세부 안내](skills/data-mission-partner/references/scenario-router.md)를 선택한다. 여러 터미널은 [병렬 작업](skills/data-mission-partner/references/workflows/parallel.md), 지정 문서와 코드 설명은 [설계 이해](skills/data-mission-partner/references/workflows/submission-understanding.md)를 필요할 때만 적용한다.
 4. 이후 “결과가 이상해”, “어디를 봐?”, “B 결과 확인해”, “다음으로”, “마무리해” 같은 말에서 관련 지침을 고른다. 스킬 이름을 사용자에게 고르게 하지 않고, 이미 맡긴 사소한 작업마다 재승인을 받지 않는다.
 
 기본은 **가져오기 → 이 파일 읽기 → 현재 과제 진행**이다. 설치·등록·MCP 설정은 자동 시작하지 않는다. 새 세션은 필요한 지침과 실제 상태를 한 번 읽는다. 다른 세션의 대화가 자동 전달된다고 가정하지 않는다.

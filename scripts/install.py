@@ -17,6 +17,38 @@ REQUIRED_SOURCE_FILES = (
 )
 
 
+REQUIRED_REFERENCE_FILES = (
+    'references/collaboration.md',
+    'references/data-checks.md',
+    'references/debugging.md',
+    'references/tools-and-models.md',
+    'references/delivery-checks.md',
+    'references/scenario-router.md',
+    'references/parallel-work.md',
+    'references/implementation-proof.md',
+    'references/domains/market-comparison.md',
+    'references/domains/supplier-change.md',
+    'references/domains/transport-planning.md',
+    'references/domains/meal-planning.md',
+    'references/domains/camera-planning.md',
+    'references/domains/overlay-quality.md',
+    'references/domains/value-chain-analysis.md',
+    'references/domains/industrial-education.md',
+    'references/patterns/allocation.md',
+    'references/patterns/change-review.md',
+    'references/patterns/comparison.md',
+    'references/patterns/index.md',
+    'references/patterns/learning-content.md',
+    'references/patterns/measurement-quality.md',
+    'references/patterns/other-work.md',
+    'references/patterns/relationship-impact.md',
+    'references/patterns/schedule-preference.md',
+    'references/patterns/spatial-review.md',
+    'references/workflows/parallel.md',
+    'references/workflows/submission-understanding.md',
+)
+
+
 class InstallError(Exception):
     pass
 
@@ -58,18 +90,17 @@ def validate_source(source):
             path = source / rel
             if not path.is_file() or not path.read_text(encoding='utf-8').strip():
                 raise InstallError('Missing or empty required source file: ' + rel)
-        core = (source / 'SKILL.md').read_text(encoding='utf-8')
-        refs = list((source / 'references').glob('*.md'))
-        if len(refs) != 5:
-            raise InstallError('Expected five focused reference files.')
-        for path in refs:
-            if 'references/' + path.name not in core:
-                raise InstallError('Unrouted reference: ' + path.name)
+        for rel in REQUIRED_REFERENCE_FILES:
+            path = source / rel
+            if not path.is_file() or not path.read_text(encoding='utf-8').strip():
+                raise InstallError('Missing or empty required reference: ' + rel)
+        graph = {}
         # The package uses inline Markdown links. Check every local linked file,
         # including references between documents and the portable license notices.
         for document in files:
             if document.suffix != '.md':
                 continue
+            graph[document] = []
             content = document.read_text(encoding='utf-8')
             for target in re.findall(r'\[[^\]]*\]\(([^)]+)\)', content):
                 target = target.strip()
@@ -89,6 +120,18 @@ def validate_source(source):
                 linked = linked.resolve()
                 if not linked.is_relative_to(source) or not linked.is_file():
                     raise InstallError('Missing or out-of-skill local link: ' + target)
+                graph[document].append(linked)
+        seen = set()
+        pending = [source / 'SKILL.md']
+        while pending:
+            document = pending.pop()
+            if document in seen:
+                continue
+            seen.add(document)
+            pending.extend(graph.get(document, ()))
+        for path in (source / 'references').rglob('*.md'):
+            if path not in seen:
+                raise InstallError('Unreachable reference from SKILL.md: ' + str(path.relative_to(source)))
         return source, sorted(files)
     except (InstallError, OSError, ValueError) as exc:
         raise SourceError('Source incomplete or unusable: ' + str(exc)) from exc
