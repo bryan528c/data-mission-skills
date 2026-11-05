@@ -13,4 +13,6 @@
 - [JINwonLEE MIT License](licenses/JINwonLEE-MIT.txt)
 - [JINwonLEE의 상위 출처 고지](licenses/JINwonLEE-UPSTREAM-NOTICE.txt)
 
-상위 고지 안의 설치 명령은 원본 프로젝트 설명입니다. 이 패키지가 해당 프로젝트 전체를 설치·복제·검증했다는 뜻은 아닙니다. 다른 공개 후보는 비교·아이디어 참고로 구분하며, 조사와 검증 기록은 원본 저장소의 docs/RESEARCH.md와 docs/VALIDATION.md에 있습니다.
+상위 고지 안의 설치 명령은 원본 프로젝트 설명입니다. 이 패키지가 해당 프로젝트 전체를 설치·복제·검증했다는 뜻이 아닙니다. 다른 공개 후보는 비교·아이디어 참고로 구분하며, 조사와 검증 기록은 원본 저장소의 docs/RESEARCH.md와 docs/VALIDATION.md에 있습니다.
+
+2026-11-05 보강한 일반 업무 패턴, 병렬 인계와 지정 양식·설계 이해 지침은 새로 작성한 내용입니다. 공개 기술 참고를 비교했으며, 시험 원문·페르소나·정답·공식 양식을 복제하지 않았습니다. 근거와 확인 범위는 저장소 docs/UPDATE_20261105.md에 구분했습니다.

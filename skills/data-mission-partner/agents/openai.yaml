@@ -1,6 +1,6 @@
 interface:
   display_name: "데이터 미션 파트너"
-  short_description: "쉬운 설명과 상황별 실행으로 데이터 과제를 막힘 없이 완성합니다"
-  default_prompt: "$data-mission-partner 지금 과제와 결과를 보고, 필요한 개념은 쉽게 설명하면서 다음 작업과 검증까지 이어 가 줘."
+  short_description: "쉬운 설명과 상황별 분업으로 업무 구현·검증·제출 이해를 이어갑니다"
+  default_prompt: "$data-mission-partner 실제 과제와 지정 양식부터 확인하고, 필요한 유형의 지침만 적용해. 중요한 선택은 쉽게 설명하고 맡긴 실행·검증·마무리는 이어가 줘."
 policy:
   allow_implicit_invocation: true
